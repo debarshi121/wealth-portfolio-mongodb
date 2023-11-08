@@ -2,6 +2,8 @@ const config = require("./config");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
+const helmet = require("helmet");
 const DB = require("./db");
 
 const PORT = config.SERVER.PORT;
@@ -21,8 +23,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
 app.use(express.json());
+app.use(helmet());
+app.use(morgan("combined"));
 
 // Routes
 const authRouter = require("./routes/authRoutes");
