@@ -1,7 +1,7 @@
 const express = require("express");
-const { createIncomeExpense, getIncomeExpense, deleteIncomeExpense, updateIncomeExpense } = require("../controllers/incomeExpenseController");
-const { protect } = require("../middlewares/authMiddleware");
-const { createValidator, updateValidator } = require("../validators/incomeExpenseValidator");
+const {createIncomeExpense, getIncomeExpense, deleteIncomeExpense, updateIncomeExpense} = require("../controllers/incomeExpenseController");
+const {protect} = require("../middlewares/authMiddleware");
+const {createValidator, updateValidator} = require("../validators/incomeExpenseValidator");
 
 const router = express.Router();
 

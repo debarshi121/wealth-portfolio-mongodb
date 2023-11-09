@@ -1,8 +1,8 @@
-const { Asset } = require("../models");
+const {Asset} = require("../models");
 
 const getAssetById = async (id) => {
 	try {
-		const asset = await Asset.findByPk(id);
+		const asset = await Asset.findById(id);
 		return asset;
 	} catch (error) {
 		throw error;
@@ -11,7 +11,7 @@ const getAssetById = async (id) => {
 
 const getAll = async (UserId) => {
 	try {
-		const assets = await Asset.findAll({ where: { UserId } });
+		const assets = await Asset.find({UserId});
 		return assets;
 	} catch (error) {
 		throw error;
@@ -34,9 +34,7 @@ const create = async (UserId, type, name, value) => {
 
 const deleteAssetById = async (id) => {
 	try {
-		await Asset.destroy({
-			where: { id },
-		});
+		await Asset.findByIdAndDelete(id);
 		return true;
 	} catch (error) {
 		throw error;

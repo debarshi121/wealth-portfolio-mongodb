@@ -1,23 +1,23 @@
-const { incomeExpenseService } = require("../services");
-const { IncomeExpense } = require("../models");
+const {incomeExpenseService} = require("../services");
+const {IncomeExpense} = require("../models");
 
 const createIncomeExpense = async (req, res) => {
 	try {
-		const { category, amount, date } = req.body;
-		const incomeExpense = await incomeExpenseService.create(req.user.id, category, amount, date);
-		return res.status(201).json({ incomeExpense });
+		const {category, amount, date} = req.body;
+		const incomeExpense = await incomeExpenseService.create(req.user._id, category, amount, date);
+		return res.status(201).json({incomeExpense});
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		return res.status(500).json({error: error.message});
 	}
 };
 
 const getIncomeExpense = async (req, res) => {
 	try {
-		const { filter, year, month } = req.query;
+		const {filter, year, month} = req.query;
 		const filterTypes = ["Expense", "Income"];
 
 		const filterOptions = {
-			UserId: req.user.id,
+			UserId: req.user._id,
 		};
 
 		if (filter && filterTypes.includes(filter)) {
@@ -25,42 +25,67 @@ const getIncomeExpense = async (req, res) => {
 		}
 
 		if (year) {
-			filterOptions.date = {
-				[Op.gte]: `${year}-01-01`,
-				[Op.lte]: `${year}-12-31`,
-			};
+			filterOptions.date = {};
 
 			if (month) {
-				const startDate = `${year}-${month.padStart(2, "0")}-01`;
+				filterOptions.date.$gte = `${year}-${month.padStart(2, "0")}-01`;
 				const nextMonth = (parseInt(month) + 1).toString().padStart(2, "0");
-				const endDate = `${year}-${nextMonth}-01`;
-
-				filterOptions.date = {
-					[Op.gte]: startDate,
-					[Op.lt]: endDate,
-				};
+				filterOptions.date.$lt = `${year}-${nextMonth}-01`;
+			} else {
+				filterOptions.date.$gte = `${year}-01-01`;
+				filterOptions.date.$lt = `${year}-12-31`;
 			}
 		}
 
-		const incomeExpense = await IncomeExpense.findAll({ where: filterOptions });
+		const incomeExpense = await IncomeExpense.find(filterOptions);
 
 		delete filterOptions.category;
-		const financialSummary = await IncomeExpense.findAll({
-			attributes: [
-				[fn("SUM", literal('CASE WHEN category = "Income" THEN amount ELSE 0 END')), "total_income"],
-				[fn("SUM", literal('CASE WHEN category = "Expense" THEN amount ELSE 0 END')), "total_expenses"],
-			],
-			where: filterOptions,
-			raw: true,
-		});
 
-		const income = parseFloat(financialSummary[0].total_income || 0);
-		const expenses = parseFloat(financialSummary[0].total_expenses || 0);
-		const savings = income - expenses > 0 ? income - expenses : 0;
+		const financialSummary = await IncomeExpense.aggregate([
+			{
+				$match: filterOptions,
+			},
+			{
+				$group: {
+					_id: null,
+					total_income: {
+						$sum: {
+							$cond: {
+								if: {$eq: ["$category", "Income"]},
+								then: "$amount",
+								else: 0,
+							},
+						},
+					},
+					total_expenses: {
+						$sum: {
+							$cond: {
+								if: {$eq: ["$category", "Expense"]},
+								then: "$amount",
+								else: 0,
+							},
+						},
+					},
+				},
+			},
+			{
+				$project: {
+					_id: 0, // Exclude _id field
+					total_income: 1,
+					total_expenses: 1,
+				},
+			},
+		]);
 
-		return res.status(200).json({ incomeExpense, financialSummary: { income, expenses, savings } });
+		// const income = parseFloat(financialSummary[0].total_income || 0);
+		// const expenses = parseFloat(financialSummary[0].total_expenses || 0);
+		// const savings = income - expenses > 0 ? income - expenses : 0;
+
+		// return res.status(200).json({incomeExpense, financialSummary: {income, expenses, savings}});
+
+		return res.status(200).json({incomeExpense, financialSummary});
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		return res.status(500).json({error: error.message});
 	}
 };
 
@@ -69,15 +94,15 @@ const deleteIncomeExpense = async (req, res) => {
 		const incomeExpense = await incomeExpenseService.getIncomeExpenseById(req.params.id);
 
 		if (incomeExpense) {
-			if (incomeExpense.UserId !== req.user.id) {
-				return res.status(403).json({ error: "You are not authorized to perform this!" });
+			if (incomeExpense.UserId.toString() !== req.user._id) {
+				return res.status(403).json({error: "You are not authorized to perform this!"});
 			}
 			await incomeExpenseService.deleteIncomeExpenseById(req.params.id);
-			return res.status(200).json({ message: "Income Expense deleted!" });
+			return res.status(200).json({message: "Income Expense deleted!"});
 		}
-		return res.status(404).json({ error: "Income Expense not found!" });
+		return res.status(404).json({error: "Income Expense not found!"});
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		return res.status(500).json({error: error.message});
 	}
 };
 
@@ -86,20 +111,19 @@ const updateIncomeExpense = async (req, res) => {
 		const incomeExpense = await incomeExpenseService.getIncomeExpenseById(req.params.id);
 
 		if (incomeExpense) {
-			if (incomeExpense.UserId !== req.user.id) {
-				return res.status(403).json({ error: "You are not authorized to perform this!" });
+			if (incomeExpense.UserId.toString() !== req.user._id) {
+				return res.status(403).json({error: "You are not authorized to perform this!"});
 			}
-			await incomeExpense.set({
+			incomeExpense.set({
 				...incomeExpense,
 				...req.body,
 			});
 			await incomeExpense.save();
-			await incomeExpense.reload();
 			return res.status(200).json(incomeExpense);
 		}
-		return res.status(404).json({ error: "Income Expense not found!" });
+		return res.status(404).json({error: "Income Expense not found!"});
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		return res.status(500).json({error: error.message});
 	}
 };
 

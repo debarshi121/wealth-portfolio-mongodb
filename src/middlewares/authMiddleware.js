@@ -1,4 +1,4 @@
-const { JWT_SECRET } = require("../config");
+const {JWT_SECRET} = require("../config");
 const jwt = require("jsonwebtoken");
 
 const protect = (req, res, next) => {
@@ -8,7 +8,7 @@ const protect = (req, res, next) => {
 		token = req.headers.authorization.split(" ")[1];
 	}
 	if (!token) {
-		return res.status(401).json({ error: "You are not logged in!" });
+		return res.status(401).json({error: "You are not logged in!"});
 	}
 
 	jwt.verify(token, JWT_SECRET, (err, decoded) => {
@@ -22,5 +22,4 @@ const protect = (req, res, next) => {
 	});
 };
 
-
-module.exports = { protect };
+module.exports = {protect};

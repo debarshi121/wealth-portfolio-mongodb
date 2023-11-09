@@ -3,7 +3,7 @@ const Asset = require("./assetModel");
 const IncomeExpense = require("./incomeExpenseModel");
 
 module.exports = {
-    User,
-    Asset,
-    IncomeExpense
-}
+	User,
+	Asset,
+	IncomeExpense,
+};

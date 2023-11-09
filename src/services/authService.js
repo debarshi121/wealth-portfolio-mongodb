@@ -1,9 +1,9 @@
 const userService = require("./userService");
-const { JWT_SECRET } = require("../config");
+const {JWT_SECRET} = require("../config");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const authenticate = async ({ email, password }) => {
+const authenticate = async ({email, password}) => {
 	try {
 		const user = await userService.getUserByEmail(email);
 
@@ -32,4 +32,4 @@ const authenticate = async ({ email, password }) => {
 	}
 };
 
-module.exports = { authenticate };
+module.exports = {authenticate};

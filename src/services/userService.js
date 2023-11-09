@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const {User} = require("../models");
 const bcrypt = require("bcryptjs");
 
 const getUserById = async (id) => {
@@ -13,7 +13,7 @@ const getUserById = async (id) => {
 const getUserByEmail = async (email) => {
 	try {
 		const user = await User.findOne({
-			email
+			email,
 		});
 		return user;
 	} catch (error) {
@@ -21,7 +21,7 @@ const getUserByEmail = async (email) => {
 	}
 };
 
-const create = async ({ email, name, password }) => {
+const create = async ({email, name, password}) => {
 	try {
 		const hashedPassword = await bcrypt.hash(password, 8);
 		const user = await User.create({
@@ -29,19 +29,13 @@ const create = async ({ email, name, password }) => {
 			name,
 			password: hashedPassword,
 		});
-
-		// const userJson = user.toJSON();
-
-		// delete userJson.password;
-
-		// return userJson;
 		return user;
 	} catch (error) {
 		throw error;
 	}
 };
 
-const getUserByEmailPassword = async ({ email, password }) => {
+const getUserByEmailPassword = async ({email, password}) => {
 	try {
 		const user = await getUserByEmail(email);
 

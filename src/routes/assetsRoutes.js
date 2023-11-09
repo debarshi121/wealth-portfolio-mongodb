@@ -1,7 +1,7 @@
 const express = require("express");
-const { createAsset, getAssets, deleteAsset, updateAsset } = require("../controllers/assetsController");
-const { protect } = require("../middlewares/authMiddleware");
-const { createValidator, updateValidator } = require("../validators/assetValidator");
+const {createAsset, getAssets, deleteAsset, updateAsset} = require("../controllers/assetsController");
+const {protect} = require("../middlewares/authMiddleware");
+const {createValidator, updateValidator} = require("../validators/assetValidator");
 
 const router = express.Router();
 

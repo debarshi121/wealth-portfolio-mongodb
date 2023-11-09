@@ -1,8 +1,8 @@
-const { IncomeExpense } = require("../models");
+const {IncomeExpense} = require("../models");
 
 const getIncomeExpenseById = async (id) => {
 	try {
-		const incomeExpense = await IncomeExpense.findByPk(id);
+		const incomeExpense = await IncomeExpense.findById(id);
 		return incomeExpense;
 	} catch (error) {
 		throw error;
@@ -11,7 +11,7 @@ const getIncomeExpenseById = async (id) => {
 
 const getAll = async (UserId) => {
 	try {
-		const incomeExpense = await IncomeExpense.findAll({ where: { UserId } });
+		const incomeExpense = await IncomeExpense.find({UserId});
 		return incomeExpense;
 	} catch (error) {
 		throw error;
@@ -34,9 +34,7 @@ const create = async (UserId, category, amount, date) => {
 
 const deleteIncomeExpenseById = async (id) => {
 	try {
-		await IncomeExpense.destroy({
-			where: { id },
-		});
+		await IncomeExpense.findByIdAndDelete(id);
 		return true;
 	} catch (error) {
 		throw error;
