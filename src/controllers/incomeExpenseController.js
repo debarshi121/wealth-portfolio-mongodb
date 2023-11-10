@@ -1,5 +1,6 @@
 const {incomeExpenseService} = require("../services");
 const {IncomeExpense} = require("../models");
+const mongoose = require("mongoose");
 
 const createIncomeExpense = async (req, res) => {
 	try {
@@ -17,7 +18,7 @@ const getIncomeExpense = async (req, res) => {
 		const filterTypes = ["Expense", "Income"];
 
 		const filterOptions = {
-			UserId: req.user._id,
+			UserId: new mongoose.Types.ObjectId(req.user._id),
 		};
 
 		if (filter && filterTypes.includes(filter)) {
@@ -77,13 +78,11 @@ const getIncomeExpense = async (req, res) => {
 			},
 		]);
 
-		// const income = parseFloat(financialSummary[0].total_income || 0);
-		// const expenses = parseFloat(financialSummary[0].total_expenses || 0);
-		// const savings = income - expenses > 0 ? income - expenses : 0;
+		const income = parseFloat(financialSummary[0]?.total_income || 0);
+		const expenses = parseFloat(financialSummary[0]?.total_expenses || 0);
+		const savings = income - expenses > 0 ? income - expenses : 0;
 
-		// return res.status(200).json({incomeExpense, financialSummary: {income, expenses, savings}});
-
-		return res.status(200).json({incomeExpense, financialSummary});
+		return res.status(200).json({incomeExpense, financialSummary: {income, expenses, savings}});
 	} catch (error) {
 		return res.status(500).json({error: error.message});
 	}
